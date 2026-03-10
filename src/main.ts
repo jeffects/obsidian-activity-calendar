@@ -40,7 +40,7 @@ export default class ActivityCalendarPlugin extends Plugin {
 	}
 
 	onunload(): void {
-		
+		// Obsidian handles cleanup of registered events and views automatically
 	}
 
 	async loadSettings(): Promise<void> {
@@ -49,7 +49,7 @@ export default class ActivityCalendarPlugin extends Plugin {
 
 	async saveSettings(): Promise<void> {
 		await this.saveData(this.settings);
-		void this.refreshCalendar();
+		this.refreshCalendar();
 	}
 
 	private refreshCalendar(): void {

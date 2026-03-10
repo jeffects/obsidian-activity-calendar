@@ -38,13 +38,13 @@ function pad(n: number, width = 2): string {
  */
 export function formatDate(date: Date, format: string): string {
 	const isoWeek = getISOWeek(date);
-	const isoWeekYear = getISOWeekYear(date);
 	const quarter = getQuarter(date);
+	const calYear = date.getFullYear();
 
 	return format.replace(/yyyy|yy|MM|M|dd|d|HH|H|mm|ss|ww|w|qqq|Q/g, (token) => {
 		switch (token) {
-			case 'yyyy': return String(isoWeekYear);
-			case 'yy':   return pad(isoWeekYear % 100);
+			case 'yyyy': return String(calYear);
+			case 'yy':   return pad(calYear % 100);
 			case 'MM':   return pad(date.getMonth() + 1);
 			case 'M':    return String(date.getMonth() + 1);
 			case 'dd':   return pad(date.getDate());

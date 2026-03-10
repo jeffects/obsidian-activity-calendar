@@ -82,11 +82,8 @@ export class CalendarView extends ItemView {
 
 		const monthEl = left.createEl('span', {
 			cls: 'ac-header-month',
-			text: formatDate(this.viewDate, 'MMMM').length
-				? this.getMonthName(this.viewDate)
-				: '',
+			text: this.getMonthName(this.viewDate),
 		});
-		monthEl.setText(this.getMonthName(this.viewDate));
 		this.applyNoteIndicator(monthEl, 'monthly', this.viewDate);
 		if (this.selectedPeriod?.type === 'monthly' &&
 			this.selectedPeriod.date.getMonth() === this.viewDate.getMonth() &&
@@ -240,13 +237,16 @@ export class CalendarView extends ItemView {
 		if (indicators.hasUncompleted && !indicators.hasCompleted) {
 			el.setText('○');
 			el.addClass('ac-task--uncompleted');
+			el.setAttr('aria-label', 'Has incomplete tasks');
 		} else if (indicators.hasCompleted && !indicators.hasUncompleted) {
 			el.setText('●');
 			el.addClass('ac-task--completed');
+			el.setAttr('aria-label', 'All tasks completed');
 		} else if (indicators.hasCompleted && indicators.hasUncompleted) {
 			// Both: show filled circle (tasks exist, some completed)
 			el.setText('◉');
 			el.addClass('ac-task--mixed');
+			el.setAttr('aria-label', 'Has mixed task status');
 		}
 	}
 
@@ -354,8 +354,6 @@ export class CalendarView extends ItemView {
 		openPeriodicNote(type, date, this.settings, this.app, forceCreate, split)
 			.then(() => this.render())
 			.catch((err: unknown) => console.error('[Activity Calendar] Failed to open note:', err));
-
-		this.render();
 	}
 
 	private showContextMenu(e: MouseEvent, type: PeriodType, date: Date): void {
