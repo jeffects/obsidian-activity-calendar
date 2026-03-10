@@ -1,11 +1,9 @@
 {
-	"id": "sample-plugin",
-	"name": "Sample Plugin",
+	"id": "obsidian-activity-calendar",
+	"name": "Activity Calendar",
 	"version": "1.0.0",
-	"minAppVersion": "0.15.0",
-	"description": "Demonstrates some of the capabilities of the Obsidian API.",
-	"author": "Obsidian",
-	"authorUrl": "https://obsidian.md",
-	"fundingUrl": "https://obsidian.md/pricing",
+	"minAppVersion": "1.0.0",
+	"description": "A sidebar calendar that lets you create and navigate daily, weekly, monthly, quarterly, and yearly periodic notes.",
+	"author": "jeffects",
 	"isDesktopOnly": false
 }

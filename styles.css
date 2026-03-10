@@ -1,8 +1,236 @@
-/*
+/* Activity Calendar Plugin Styles */
 
-This CSS file will be included with your plugin, and
-available in the app when your plugin is enabled.
+/* ── Container ──────────────────────────────────────────────────────────── */
+.ac-view {
+	padding: 0;
+	overflow-y: auto;
+}
 
-If your plugin does not need CSS, delete this file.
+.ac-container {
+	display: flex;
+	flex-direction: column;
+	padding: 8px 6px 12px;
+	gap: 8px;
+	user-select: none;
+}
 
-*/
+/* ── Header ─────────────────────────────────────────────────────────────── */
+.ac-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 4px;
+}
+
+.ac-header-left {
+	display: flex;
+	align-items: baseline;
+	gap: 6px;
+}
+
+.ac-header-month,
+.ac-header-year {
+	font-size: 1.2em;
+	font-weight: 600;
+	cursor: pointer;
+	border-radius: 4px;
+	padding: 2px 4px;
+	transition: background-color 0.1s;
+}
+
+.ac-header-month:hover,
+.ac-header-year:hover {
+	background-color: var(--background-modifier-active-hover);
+}
+
+.ac-header-nav {
+	display: flex;
+	align-items: center;
+	gap: 2px;
+}
+
+.ac-nav-btn {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: transparent;
+	border: none;
+	cursor: pointer;
+	padding: 4px;
+	border-radius: 4px;
+	color: var(--text-muted);
+	transition: background-color 0.1s, color 0.1s;
+}
+
+.ac-nav-btn:hover {
+	background-color: var(--background-modifier-active-hover);
+	color: var(--text-normal);
+}
+
+/* ── Calendar Grid ───────────────────────────────────────────────────────── */
+.ac-grid {
+	width: 100%;
+	border-collapse: collapse;
+	table-layout: fixed;
+	font-size: 0.85em;
+}
+
+.ac-grid th,
+.ac-grid td {
+	text-align: center;
+	padding: 3px 2px;
+	border-radius: 4px;
+}
+
+/* Quarter header cell */
+.ac-quarter {
+	cursor: pointer;
+	color: var(--text-muted);
+	font-weight: 600;
+	font-size: 0.8em;
+	padding: 3px 2px;
+}
+
+.ac-quarter:hover {
+	background-color: var(--background-modifier-active-hover);
+	color: var(--text-normal);
+}
+
+/* Weekday name headers */
+.ac-weekday-header {
+	color: var(--text-muted);
+	font-weight: 500;
+	font-size: 0.8em;
+}
+
+/* Week number cells */
+.ac-week {
+	cursor: pointer;
+	color: var(--text-muted);
+	font-size: 0.8em;
+}
+
+.ac-week:hover {
+	background-color: var(--background-modifier-active-hover);
+	color: var(--text-normal);
+}
+
+/* Day cells */
+.ac-day {
+	cursor: pointer;
+	position: relative;
+	vertical-align: middle;
+}
+
+.ac-day:hover {
+	background-color: var(--background-modifier-active-hover);
+}
+
+.ac-day-number {
+	display: block;
+	line-height: 1.4;
+}
+
+/* ── Visual Indicators ───────────────────────────────────────────────────── */
+
+/* Today: text in accent colour */
+.ac-day--today .ac-day-number {
+	color: var(--text-accent);
+	font-weight: 600;
+}
+
+/* Days outside the current month: dimmed */
+.ac-day--outside {
+	opacity: 0.45;
+}
+
+/* Period has a note → thin underline (faint colour) */
+.ac-has-note {
+	text-decoration: underline;
+	text-decoration-color: var(--text-faint);
+	text-underline-offset: 0.15em;
+	text-decoration-thickness: 0.1em;
+}
+
+/* Selected period → bold underline (accent colour) */
+.ac-selected {
+	text-decoration: underline;
+	text-decoration-color: var(--text-accent);
+	text-underline-offset: 0.15em;
+	text-decoration-thickness: 0.15em;
+	font-weight: 700;
+}
+
+/* ── Task indicators ────────────────────────────────────────────────────── */
+.ac-task-indicator {
+	display: block;
+	font-size: 0.6em;
+	line-height: 1;
+	height: 1em;
+	color: var(--text-muted);
+}
+
+.ac-task--uncompleted {
+	color: var(--text-muted);
+}
+
+.ac-task--completed {
+	color: var(--text-accent);
+}
+
+.ac-task--mixed {
+	color: var(--text-accent);
+}
+
+/* ── Notes Panel ─────────────────────────────────────────────────────────── */
+.ac-notes-panel {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	border-top: 1px solid var(--background-modifier-border);
+	padding-top: 8px;
+	margin-top: 4px;
+}
+
+.ac-notes-empty {
+	color: var(--text-muted);
+	font-size: 0.85em;
+	text-align: center;
+	margin: 4px 0;
+}
+
+.ac-note-item {
+	display: flex;
+	flex-direction: column;
+	padding: 5px 6px;
+	border-radius: 6px;
+	cursor: pointer;
+	gap: 2px;
+	transition: background-color 0.1s;
+}
+
+.ac-note-item:hover {
+	background-color: var(--background-modifier-active-hover);
+}
+
+.ac-note-title {
+	font-weight: 600;
+	font-size: 0.9em;
+	color: var(--text-normal);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.ac-note-date {
+	font-size: 0.78em;
+	color: var(--text-muted);
+}
+
+.ac-note-path {
+	font-size: 0.72em;
+	color: var(--text-faint);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
