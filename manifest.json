@@ -1,9 +1,10 @@
 {
-	"id": "obsidian-activity-calendar",
+	"id": "activity-calendar",
 	"name": "Activity Calendar",
 	"version": "1.0.0",
 	"minAppVersion": "1.0.0",
 	"description": "A sidebar calendar that lets you create and navigate daily, weekly, monthly, quarterly, and yearly periodic notes.",
 	"author": "jeffects",
-	"isDesktopOnly": false
+	"isDesktopOnly": false,
+	"fundingUrl": "https://buymeacoffee.com/jeffects"
 }
