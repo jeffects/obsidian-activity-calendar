@@ -202,9 +202,12 @@
 	background-color: var(--interactive-accent-hover);
 }
 
-.ac-day--today .ac-dot--note,
-.ac-day--today .ac-dot--task-completed {
+.ac-day--today .ac-dot--note {
 	background-color: var(--text-on-accent);
+}
+
+.ac-day--today .ac-dot--task-completed {
+	color: var(--text-on-accent);
 }
 
 .ac-day--today .ac-dot--task-uncompleted {

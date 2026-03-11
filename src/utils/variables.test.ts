@@ -88,9 +88,31 @@ describe('substituteVariables', () => {
 		expect(substituteVariables('plain text', date, app)).toBe('plain text');
 	});
 
-	test('handles invalid arithmetic gracefully (returns original date)', () => {
+	test('handles invalid arithmetic gracefully (treated as part of format)', () => {
 		const app = createMockApp();
-		// Invalid arithmetic format → applyDateArithmetic returns original date
-		expect(substituteVariables('{{date:yyyy-MM-dd:invalid}}', date, app)).toBe('2024-03-05');
+		// "invalid" doesn't match arithmetic pattern, so the whole body is treated as format
+		// "yyyy-MM-dd:invalid" → date tokens are replaced, ":invali" are literal, "d" matches day token
+		expect(substituteVariables('{{date:yyyy-MM-dd:invalid}}', date, app)).toBe('2024-03-05:invali5');
+	});
+
+	test('handles format containing colons (HH:mm)', () => {
+		const app = createMockApp();
+		expect(substituteVariables('{{date:HH:mm}}', date, app)).toBe('14:30');
+	});
+
+	test('handles format with colons and arithmetic (HH:mm with +d1)', () => {
+		const app = createMockApp();
+		expect(substituteVariables('{{date:yyyy-MM-dd HH:mm:+d1}}', date, app)).toBe('2024-03-06 14:30');
+	});
+
+	test('handles today format containing colons (HH:mm)', () => {
+		const app = createMockApp();
+		const fakeNow = new Date(2024, 5, 15, 9, 45);
+		vi.useFakeTimers();
+		vi.setSystemTime(fakeNow);
+
+		expect(substituteVariables('{{today:HH:mm}}', date, app)).toBe('09:45');
+
+		vi.useRealTimers();
 	});
 });

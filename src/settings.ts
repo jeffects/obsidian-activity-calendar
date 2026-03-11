@@ -164,7 +164,7 @@ export class ActivityCalendarSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName('Highlight incomplete tasks')
-			.setDesc('Turn the day number red when the note has uncompleted tasks.')
+			.setDesc('Highlight the calendar day when the note has uncompleted tasks.')
 			.addToggle((t) =>
 				t.setValue(this.plugin.settings.highlightIncompleteTasks).onChange(async (v) => {
 					this.plugin.settings.highlightIncompleteTasks = v;

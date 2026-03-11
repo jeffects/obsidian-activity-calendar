@@ -151,6 +151,17 @@ describe('formatDate', () => {
 	test('formats combined template yyyy-ww', () => {
 		expect(formatDate(date, 'yyyy-ww')).toBe('2024-10');
 	});
+
+	test('formats YYYY (ISO week-year) same as yyyy for mid-year', () => {
+		expect(formatDate(date, 'YYYY')).toBe('2024');
+	});
+
+	test('formats YYYY correctly at year boundary (Dec 31 2024 → ISO week-year 2025)', () => {
+		const dec31 = new Date(2024, 11, 31); // Tuesday, ISO week 1 of 2025
+		expect(formatDate(dec31, 'YYYY-ww')).toBe('2025-01');
+		// Compare: yyyy would give wrong result
+		expect(formatDate(dec31, 'yyyy-ww')).toBe('2024-01');
+	});
 });
 
 // ── parseDate ────────────────────────────────────────────────────────────────

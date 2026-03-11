@@ -34,15 +34,20 @@ function pad(n: number, width = 2): string {
 
 /**
  * Formats a Date using date-fns-like format tokens:
- *   yyyy  yy  MM  M  dd  d  HH  H  mm  ss  ww  w  qqq  Q
+ *   YYYY  yyyy  yy  MM  M  dd  d  HH  H  mm  ss  ww  w  qqq  Q
+ *
+ * YYYY = ISO week-year (use with ww/w for correct year-boundary weeks)
+ * yyyy = calendar year
  */
 export function formatDate(date: Date, format: string): string {
 	const isoWeek = getISOWeek(date);
+	const isoWeekYr = getISOWeekYear(date);
 	const quarter = getQuarter(date);
 	const calYear = date.getFullYear();
 
-	return format.replace(/yyyy|yy|MM|M|dd|d|HH|H|mm|ss|ww|w|qqq|Q/g, (token) => {
+	return format.replace(/YYYY|yyyy|yy|MM|M|dd|d|HH|H|mm|ss|ww|w|qqq|Q/g, (token) => {
 		switch (token) {
+			case 'YYYY': return String(isoWeekYr);
 			case 'yyyy': return String(calYear);
 			case 'yy':   return pad(calYear % 100);
 			case 'MM':   return pad(date.getMonth() + 1);

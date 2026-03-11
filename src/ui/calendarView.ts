@@ -24,6 +24,7 @@ export class CalendarView extends ItemView {
 	private settings: ActivityCalendarSettings;
 	private viewDate: Date;
 	private selectedPeriod: SelectedPeriod | null = null;
+	private notesCache: Map<string, NoteInfo[]> = new Map();
 
 	constructor(leaf: WorkspaceLeaf, private readonly settingsRef: { settings: ActivityCalendarSettings }) {
 		super(leaf);
@@ -58,6 +59,7 @@ export class CalendarView extends ItemView {
 	// ─── Rendering ────────────────────────────────────────────────────────────
 
 	render(): void {
+		this.notesCache.clear();
 		const el = this.contentEl;
 		el.empty();
 		el.addClass('ac-view');
@@ -145,13 +147,19 @@ export class CalendarView extends ItemView {
 		const qTh = tr.createEl('th', {
 			cls: 'ac-quarter',
 			text: `Q${getQuarter(qDate)}`,
-			attr: { role: 'button' },
+			attr: { role: 'button', tabindex: '0' },
 		});
 		this.applyNoteIndicator(qTh, 'quarterly', qDate);
 		if (this.selectedPeriod?.type === 'quarterly' && this.isSamePeriod('quarterly', qDate)) {
 			qTh.addClass('ac-selected');
 		}
 		qTh.addEventListener('click', (e) => this.handlePeriodClick(e, 'quarterly', qDate));
+		qTh.addEventListener('keydown', (e) => {
+			if (e.key === 'Enter' || e.key === ' ') {
+				e.preventDefault();
+				this.handlePeriodClick(e, 'quarterly', qDate);
+			}
+		});
 		qTh.addEventListener('contextmenu', (e) => this.showContextMenu(e, 'quarterly', qDate));
 
 		// Weekday headers
@@ -179,20 +187,26 @@ export class CalendarView extends ItemView {
 		const td = tr.createEl('td', {
 			cls: 'ac-week',
 			text: String(week.weekNumber),
-			attr: { role: 'button' },
+			attr: { role: 'button', tabindex: '0' },
 		});
 		this.applyNoteIndicator(td, 'weekly', repDate);
 		if (this.selectedPeriod?.type === 'weekly' && this.isSamePeriod('weekly', repDate)) {
 			td.addClass('ac-selected');
 		}
 		td.addEventListener('click', (e) => this.handlePeriodClick(e, 'weekly', repDate));
+		td.addEventListener('keydown', (e) => {
+			if (e.key === 'Enter' || e.key === ' ') {
+				e.preventDefault();
+				this.handlePeriodClick(e, 'weekly', repDate);
+			}
+		});
 		td.addEventListener('contextmenu', (e) => this.showContextMenu(e, 'weekly', repDate));
 	}
 
 	private renderDayCell(tr: HTMLElement, day: DayData, today: Date): void {
 		const td = tr.createEl('td', {
 			cls: 'ac-day',
-			attr: { role: 'button' },
+			attr: { role: 'button', tabindex: '0' },
 		});
 
 		if (!day.isCurrentMonth) td.addClass('ac-day--outside');
@@ -206,17 +220,29 @@ export class CalendarView extends ItemView {
 		// Underline indicator for note existence
 		this.applyNoteIndicator(td, 'daily', day.date);
 
+		// Resolve the daily note file once for dots + highlight
+		const dailyPath = getNotePath('daily', day.date, this.settings, this.app);
+		const dailyFile = this.app.vault.getAbstractFileByPath(dailyPath);
+		const dailyTFile = dailyFile instanceof TFile ? dailyFile : null;
+		const taskIndicators = dailyTFile ? this.getTaskIndicators(dailyTFile) : null;
+
 		// Dot indicators row: note dot + task dot
 		const dotsEl = td.createDiv('ac-dots');
-		this.renderNoteDot(dotsEl, day.date);
-		this.renderTaskDot(dotsEl, day.date);
+		this.renderNoteDot(dotsEl, dailyTFile !== null);
+		this.renderTaskDot(dotsEl, taskIndicators);
 
 		// Highlight incomplete tasks
-		if (this.settings.highlightIncompleteTasks) {
-			this.applyIncompleteTaskHighlight(td, day.date);
+		if (this.settings.highlightIncompleteTasks && taskIndicators?.hasUncompleted) {
+			td.addClass('ac-day--incomplete');
 		}
 
 		td.addEventListener('click', (e) => this.handleDayClick(e, day.date));
+		td.addEventListener('keydown', (e) => {
+			if (e.key === 'Enter' || e.key === ' ') {
+				e.preventDefault();
+				this.handleDayClick(e, day.date);
+			}
+		});
 		td.addEventListener('contextmenu', (e) => this.showContextMenu(e, 'daily', day.date));
 	}
 
@@ -234,34 +260,17 @@ export class CalendarView extends ItemView {
 		}
 	}
 
-	private applyIncompleteTaskHighlight(el: HTMLElement, date: Date): void {
-		const path = getNotePath('daily', date, this.settings, this.app);
-		const file = this.app.vault.getAbstractFileByPath(path);
-		if (!(file instanceof TFile)) return;
-
-		const { hasUncompleted } = this.getTaskIndicators(file);
-		if (hasUncompleted) {
-			el.addClass('ac-day--incomplete');
-		}
-	}
-
-	private renderNoteDot(container: HTMLElement, date: Date): void {
-		const path = getNotePath('daily', date, this.settings, this.app);
-		const hasNote = this.app.vault.getAbstractFileByPath(path) instanceof TFile;
+	private renderNoteDot(container: HTMLElement, hasNote: boolean): void {
 		const dot = container.createEl('span', { cls: 'ac-dot' });
 		if (hasNote) {
 			dot.addClass('ac-dot--note');
 		}
 	}
 
-	private renderTaskDot(container: HTMLElement, date: Date): void {
-		const path = getNotePath('daily', date, this.settings, this.app);
-		const file = this.app.vault.getAbstractFileByPath(path);
+	private renderTaskDot(container: HTMLElement, indicators: TaskIndicators | null): void {
 		const dot = container.createEl('span', { cls: 'ac-dot' });
+		if (!indicators) return;
 
-		if (!(file instanceof TFile)) return;
-
-		const indicators = this.getTaskIndicators(file);
 		if (indicators.hasCompleted && !indicators.hasUncompleted) {
 			dot.addClass('ac-dot--task-completed');
 			dot.setText('✓');
@@ -373,6 +382,10 @@ export class CalendarView extends ItemView {
 	}
 
 	private getNotesInRange(start: Date, end: Date): NoteInfo[] {
+		const cacheKey = `${start.getTime()}-${end.getTime()}`;
+		const cached = this.notesCache.get(cacheKey);
+		if (cached) return cached;
+
 		const notes: NoteInfo[] = [];
 		for (const file of this.app.vault.getMarkdownFiles()) {
 			const createdAt = this.getNoteCreatedAt(file);
@@ -380,6 +393,7 @@ export class CalendarView extends ItemView {
 				notes.push({ title: file.basename, path: file.path, createdAt });
 			}
 		}
+		this.notesCache.set(cacheKey, notes);
 		return notes;
 	}
 
@@ -399,11 +413,11 @@ export class CalendarView extends ItemView {
 
 	// ─── Interactions ─────────────────────────────────────────────────────────
 
-	private handleDayClick(e: MouseEvent, date: Date): void {
+	private handleDayClick(e: MouseEvent | KeyboardEvent, date: Date): void {
 		this.handlePeriodClick(e, 'daily', date);
 	}
 
-	private handlePeriodClick(e: MouseEvent, type: PeriodType, date: Date): void {
+	private handlePeriodClick(e: MouseEvent | KeyboardEvent, type: PeriodType, date: Date): void {
 		e.preventDefault();
 		this.selectedPeriod = { type, date };
 

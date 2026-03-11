@@ -18,6 +18,18 @@ function applyDateArithmetic(date: Date, arithmetic: string): Date {
 	return result;
 }
 
+function parseFormatBody(body: string): { format: string; arithmetic: string | undefined } {
+	const raw = body.trim();
+	const lastColon = raw.lastIndexOf(':');
+	if (lastColon !== -1) {
+		const potentialArithmetic = raw.slice(lastColon + 1).trim();
+		if (/^[+-][dwmy]\d+$/.test(potentialArithmetic)) {
+			return { format: raw.slice(0, lastColon).trim(), arithmetic: potentialArithmetic };
+		}
+	}
+	return { format: raw, arithmetic: undefined };
+}
+
 /**
  * Substitutes template variables in a string:
  *  - {{date:FORMAT}}           → period date formatted
@@ -33,21 +45,23 @@ export function substituteVariables(
 ): string {
 	// {{date:FORMAT}} and {{date:FORMAT:ARITHMETIC}}
 	let result = template.replace(
-		/\{\{date:([^:}]+)(?::([^}]+))?\}\}/g,
-		(_, format: string, arithmetic: string | undefined) => {
+		/\{\{date:([^}]+)\}\}/g,
+		(_, body: string) => {
+			const { format, arithmetic } = parseFormatBody(body);
 			let d = periodDate;
-			if (arithmetic) d = applyDateArithmetic(d, arithmetic.trim());
-			return formatDate(d, format.trim());
+			if (arithmetic) d = applyDateArithmetic(d, arithmetic);
+			return formatDate(d, format);
 		},
 	);
 
 	// {{today:FORMAT}} and {{today:FORMAT:ARITHMETIC}}
 	result = result.replace(
-		/\{\{today:([^:}]+)(?::([^}]+))?\}\}/g,
-		(_, format: string, arithmetic: string | undefined) => {
+		/\{\{today:([^}]+)\}\}/g,
+		(_, body: string) => {
+			const { format, arithmetic } = parseFormatBody(body);
 			let d = new Date();
-			if (arithmetic) d = applyDateArithmetic(d, arithmetic.trim());
-			return formatDate(d, format.trim());
+			if (arithmetic) d = applyDateArithmetic(d, arithmetic);
+			return formatDate(d, format);
 		},
 	);
 
